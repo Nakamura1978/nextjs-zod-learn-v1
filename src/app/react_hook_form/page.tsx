@@ -7,7 +7,7 @@ type FormData = {
   password: string;
 };
 
-const reactHookForm = () => {
+const form = () => {
   const {
     register,
     handleSubmit,
@@ -58,4 +58,4 @@ const reactHookForm = () => {
   );
 };
 
-export default reactHookForm;
+export default form;
