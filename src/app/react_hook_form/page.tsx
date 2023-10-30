@@ -1,22 +1,36 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import * as z from "zod";
 
-type FormData = {
-  email: string;
-  password: string;
-};
+const loginSchema = z
+  .object({
+    email: z
+      .string()
+      .email({ message: "メールアドレスの形式ではありません。" })
+      .min(1, { message: "１文字以上入力する必要があります。" }),
+    password: z
+      .string()
+      .min(1, { message: "１文字以上入力する必要があります。" }),
+  })
+  .refine((data) => data.password === data.confirmpassword, {
+    message: "passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+type Login = z.infer<typeof loginSchema>;
 
 const Form = () => {
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<FormData>();
+  } = useForm<Login>({
+    resolver: zodResolver(loginSchema),
+  });
 
   const onSubmit = handleSubmit((data) => console.log(data));
-
-  console.log(errors.email);
 
   return (
     <main className="bg-yellow-50 min-h-screen p-10">
@@ -29,13 +43,20 @@ const Form = () => {
             </label>
             <input
               id="email"
-              {...register("email", { required: true })}
+              {...register("email", {
+                required: {
+                  value: true,
+                  message: "入力が必須の項目です。",
+                },
+              })}
               className="w-2/3 rounded-md bg-gray-50 shadow-md px-3 py-1"
             />
           </div>
-          {errors.email && (
-            <div className="text-center">入力が必須の項目です</div>
-          )}
+
+          <div className="text-red-500 text-center">
+            {errors.email?.message}
+          </div>
+
           <div className="flex justify-between">
             <label htmlFor="password" className="w-1/3 text-center">
               パスワード
@@ -43,15 +64,26 @@ const Form = () => {
             <input
               id="password"
               {...register("password")}
+              type="password"
               className="w-2/3 rounded-md bg-gray-50 shadow-md px-3 py-1"
             />
           </div>
-          <button
-            type="submit"
-            className="rounded-md px-3 py-1 bg-blue-100 shadow-md hover:bg-blue-300 hover:-translate-y-1"
-          >
-            ログイン
-          </button>
+
+          <div className="text-red-500 text-center">
+            {errors.password?.message}
+          </div>
+
+          <div>
+            <label htmlFor="confirmPassword">confirmPassword</label>
+            <input
+              id="confirmPassword"
+              {...register("confirmPassword")}
+              type="password"
+            />
+            <p>{errors.confirmPassword?.message}</p>
+          </div>
+
+          <button type="submit">ログイン</button>
         </form>
       </section>
     </main>
